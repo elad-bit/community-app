@@ -10,7 +10,6 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = (await createServerSupabaseClient()) as any;
   const { data: { user } } = await supabase.auth.getUser();
 

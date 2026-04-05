@@ -7,7 +7,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = (await createServerSupabaseClient()) as any;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "לא מחובר" }, { status: 401 });
@@ -31,7 +30,6 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = (await createServerSupabaseClient()) as any;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "לא מחובר" }, { status: 401 });
@@ -73,7 +71,6 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = (await createServerSupabaseClient()) as any;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "לא מחובר" }, { status: 401 });

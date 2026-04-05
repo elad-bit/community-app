@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { InviteClient } from "@/components/settings/InviteClient";
 
 export default async function InvitePage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = (await createServerSupabaseClient()) as any;
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");

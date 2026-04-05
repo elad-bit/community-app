@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { CommunitySettingsClient } from "@/components/settings/CommunitySettingsClient";
 
 export default async function CommunitySettingsPage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = (await createServerSupabaseClient()) as any;
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");

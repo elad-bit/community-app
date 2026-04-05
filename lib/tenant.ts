@@ -22,7 +22,6 @@ export async function getTenantContext(): Promise<TenantContext | null> {
 
   if (!membership) return null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const m = membership as any;
   const tenant = m.tenants;
   if (!tenant || Array.isArray(tenant)) return null;

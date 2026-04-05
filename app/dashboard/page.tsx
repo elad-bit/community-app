@@ -23,7 +23,6 @@ const TASK_LABEL:    Record<string, string> = { pending: "ממתין", in_progre
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function DashboardPage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = (await createServerSupabaseClient()) as any;
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");

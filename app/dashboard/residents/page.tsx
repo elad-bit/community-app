@@ -4,7 +4,6 @@ import { ResidentsClient } from "@/components/residents/ResidentsClient";
 import type { Resident, Request } from "@/types/index";
 
 export default async function ResidentsPage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = (await createServerSupabaseClient()) as any;
 
   const { data: { user } } = await supabase.auth.getUser();

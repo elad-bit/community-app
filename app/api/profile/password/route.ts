@@ -4,7 +4,6 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 // POST /api/profile/password — שינוי סיסמה
 export async function POST(request: NextRequest) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = (await createServerSupabaseClient()) as any;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "לא מחובר" }, { status: 401 });

@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { IntegrationsClient } from "@/components/settings/IntegrationsClient";
 
 export default async function IntegrationsPage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = (await createServerSupabaseClient()) as any;
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");

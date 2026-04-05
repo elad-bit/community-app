@@ -4,7 +4,6 @@ import { RequestsClient } from "@/components/requests/RequestsClient";
 import type { Request, Resident, Task } from "@/types/index";
 
 export default async function RequestsPage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = (await createServerSupabaseClient()) as any;
 
   const { data: { user } } = await supabase.auth.getUser();
