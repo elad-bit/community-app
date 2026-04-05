@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SocialAuth } from "@/components/ui/SocialAuth";
+import { AuthForm } from "@/components/ui/AuthForm";
 
 export default function RegisterPage() {
   return (
@@ -24,9 +24,7 @@ export default function RegisterPage() {
           <p className="text-secondary-400 text-sm text-center mb-6">
             בחר איך להירשם
           </p>
-
-          <SocialAuth mode="register" />
-
+          <AuthForm mode="register" />
         </div>
 
         <p className="text-center text-secondary-500 text-sm mt-6">

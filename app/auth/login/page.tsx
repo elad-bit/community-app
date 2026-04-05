@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SocialAuth } from "@/components/ui/SocialAuth";
+import { AuthForm } from "@/components/ui/AuthForm";
 
 export default function LoginPage() {
   return (
@@ -24,9 +24,7 @@ export default function LoginPage() {
           <p className="text-secondary-400 text-sm text-center mb-6">
             בחר איך להתחבר
           </p>
-
-          <SocialAuth mode="login" />
-
+          <AuthForm mode="login" />
         </div>
 
         <p className="text-center text-secondary-500 text-sm mt-6">

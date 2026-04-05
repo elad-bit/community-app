@@ -24,6 +24,9 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
+  // Admin routes are handled separately — skip Supabase auth
+  if (pathname.startsWith("/admin")) return supabaseResponse;
+
   const isProtectedRoute = pathname.startsWith("/dashboard");
   const isAuthRoute     = pathname.startsWith("/auth/login") || pathname.startsWith("/auth/register");
   const isOnboarding    = pathname.startsWith("/onboarding");
