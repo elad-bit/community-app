@@ -39,9 +39,9 @@ export async function GET() {
       avatar_url: u.user_metadata?.avatar_url,
       created_at: u.created_at,
       last_sign_in_at: u.last_sign_in_at,
-      banned: u.banned,
+      banned: !!(u as { ban_duration?: string }).ban_duration && (u as { ban_duration?: string }).ban_duration !== "none",
       tenant: membership
-        ? { id: membership.tenant_id, name: (membership.tenants as { name: string; slug: string })?.name, role: membership.role }
+        ? { id: membership.tenant_id, name: (membership.tenants as unknown as { name: string; slug: string })?.name, role: membership.role }
         : null,
     };
   });
