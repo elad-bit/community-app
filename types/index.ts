@@ -165,6 +165,72 @@ export interface Poll {
   voters?: { user_id: string; name: string; voted_at: string }[];
 }
 
+// --- תקציב ---
+
+export type TransactionType = "income" | "expense";
+export type TransactionSource = "manual" | "bank" | "accounting";
+
+export interface BudgetItem {
+  id: string;
+  tenant_id: string;
+  category: string;
+  description: string;
+  planned_amount: number;
+  year: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  // computed
+  actual_amount?: number;
+  variance?: number; // planned - actual (positive = under budget)
+  transactions?: BudgetTransaction[];
+}
+
+export interface BudgetTransaction {
+  id: string;
+  tenant_id: string;
+  budget_item_id: string | null;
+  type: TransactionType;
+  amount: number;
+  description: string;
+  supplier: string | null;
+  transaction_date: string;
+  source: TransactionSource;
+  external_id: string | null;
+  import_batch_id: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  // joined
+  budget_items?: { category: string; description: string } | null;
+}
+
+export interface BudgetItemFormData {
+  category: string;
+  description: string;
+  planned_amount: number;
+  year: number;
+}
+
+export interface BudgetTransactionFormData {
+  type: TransactionType;
+  amount: number;
+  description: string;
+  supplier?: string;
+  transaction_date: string;
+  budget_item_id?: string | null;
+  source?: TransactionSource;
+  external_id?: string | null;
+}
+
+export interface BudgetSummary {
+  year: number;
+  total_planned: number;
+  total_actual: number;
+  total_income: number;
+  pct_executed: number;
+}
+
 // ============================================================
 // סוגי API Response
 // ============================================================
