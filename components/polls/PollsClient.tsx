@@ -354,7 +354,7 @@ function ResultsModal({ poll, isOpen, onClose }: {
   if (!isOpen || !poll) return null;
 
   const options = poll.options || [];
-  const maxVotes = Math.max(...options.map(o => o.vote_count || 0), 1);
+  const maxVotes = Math.max(...options.map((o: PollOption) => o.vote_count || 0), 1);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" dir="rtl">

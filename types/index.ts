@@ -130,6 +130,41 @@ export interface Notification {
   created_at: string;
 }
 
+// --- הצבעות ---
+
+export type PollType = "general_assembly" | "committee";
+export type PollStatus = "draft" | "open" | "closed";
+export type PollCategory = "bylaw" | "budget" | "committee_election" | "general";
+
+export interface PollOption {
+  id: string;
+  poll_id: string;
+  text: string;
+  order_index: number;
+  created_at: string;
+  vote_count?: number;
+}
+
+export interface Poll {
+  id: string;
+  tenant_id: string;
+  title: string;
+  description: string | null;
+  type: PollType;
+  category: PollCategory;
+  is_anonymous: boolean;
+  status: PollStatus;
+  created_by: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  created_at: string;
+  updated_at: string;
+  options?: PollOption[];
+  total_votes?: number;
+  has_voted?: boolean;
+  voters?: { user_id: string; name: string; voted_at: string }[];
+}
+
 // ============================================================
 // סוגי API Response
 // ============================================================
