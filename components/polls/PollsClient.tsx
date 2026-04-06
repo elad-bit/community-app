@@ -363,7 +363,7 @@ function ResultsModal({ poll, isOpen, onClose }: {
         <div className="sticky top-0 bg-white border-b border-secondary-200 p-6 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-secondary-900">{poll.title}</h2>
-            <p className="text-sm text-secondary-500 mt-1">סה"כ קולות: {poll.total_votes}</p>
+            <p className="text-sm text-secondary-500 mt-1">סה&quot;כ קולות: {poll.total_votes}</p>
           </div>
           <button onClick={onClose} className="text-secondary-500 hover:text-secondary-700">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -497,7 +497,7 @@ export function PollsClient({ initialPolls, isAdmin, userId }: PollsClientProps)
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-secondary-900">הצבעות</h1>
-          <p className="text-sm text-secondary-500 mt-0.5">{polls.length} הצבעות סה"כ</p>
+          <p className="text-sm text-secondary-500 mt-0.5">{polls.length} הצבעות סה&quot;כ</p>
         </div>
         {isAdmin && (
           <Button size="lg" onClick={() => setCreateModalOpen(true)} className="shadow-sm">
