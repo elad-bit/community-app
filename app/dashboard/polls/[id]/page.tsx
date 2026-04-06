@@ -14,6 +14,7 @@ export default async function PollDetailPage({ params }: { params: { id: string 
 
   const { data: role } = await supabase.rpc("get_my_resident_role");
   const isAdmin = role === "admin";
+  const canManage = role === "admin" || role === "chairman";
 
   const adminSupabase = createServerSupabaseAdminClient();
 
@@ -37,7 +38,7 @@ export default async function PollDetailPage({ params }: { params: { id: string 
   const total_votes = (poll.poll_participants || []).length;
 
   let voters = undefined;
-  if (!poll.is_anonymous && isAdmin) {
+  if (!poll.is_anonymous && canManage) {
     const { data: residents } = await adminSupabase
       .from("residents")
       .select("user_id, name")
@@ -64,6 +65,7 @@ export default async function PollDetailPage({ params }: { params: { id: string 
     <PollDetailClient
       poll={enrichedPoll}
       isAdmin={isAdmin}
+      canManage={canManage}
       userId={user.id}
     />
   );

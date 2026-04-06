@@ -4,7 +4,7 @@
 
 // --- תושבים ---
 
-export type ResidentRole = "admin" | "resident";
+export type ResidentRole = "admin" | "chairman" | "resident";
 
 export interface Resident {
   id: string;

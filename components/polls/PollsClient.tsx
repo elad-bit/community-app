@@ -11,6 +11,7 @@ import type { Poll, PollOption, PollStatus, PollType, PollCategory } from "@/typ
 interface PollsClientProps {
   initialPolls: Poll[];
   isAdmin: boolean;
+  canManage?: boolean;
   userId: string;
 }
 
@@ -402,7 +403,8 @@ function ResultsModal({ poll, isOpen, onClose }: {
   );
 }
 
-export function PollsClient({ initialPolls, isAdmin, userId }: PollsClientProps) {
+export function PollsClient({ initialPolls, isAdmin, canManage, userId }: PollsClientProps) {
+  const effectiveCanManage = canManage ?? isAdmin;
   const toast = useToast();
   const router = useRouter();
 
@@ -499,7 +501,7 @@ export function PollsClient({ initialPolls, isAdmin, userId }: PollsClientProps)
           <h1 className="text-2xl font-bold text-secondary-900">הצבעות</h1>
           <p className="text-sm text-secondary-500 mt-0.5">{polls.length} הצבעות סה&quot;כ</p>
         </div>
-        {isAdmin && (
+        {effectiveCanManage && (
           <Button size="lg" onClick={() => setCreateModalOpen(true)} className="shadow-sm">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -614,7 +616,7 @@ export function PollsClient({ initialPolls, isAdmin, userId }: PollsClientProps)
                     </Button>
                   )}
 
-                  {isAdmin && poll.status === "draft" && (
+                  {effectiveCanManage && poll.status === "draft" && (
                     <>
                       <Button
                         size="sm"
@@ -635,7 +637,7 @@ export function PollsClient({ initialPolls, isAdmin, userId }: PollsClientProps)
                     </>
                   )}
 
-                  {isAdmin && poll.status === "open" && (
+                  {effectiveCanManage && poll.status === "open" && (
                     <Button
                       size="sm"
                       variant="outline"

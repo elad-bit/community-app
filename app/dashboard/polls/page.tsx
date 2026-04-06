@@ -15,6 +15,7 @@ export default async function PollsPage() {
 
   const { data: role } = await supabase.rpc("get_my_resident_role");
   const isAdmin = role === "admin";
+  const canManage = role === "admin" || role === "chairman";
 
   const adminSupabase = createServerSupabaseAdminClient();
 
@@ -37,5 +38,5 @@ export default async function PollsPage() {
     };
   });
 
-  return <PollsClient initialPolls={enriched as Poll[]} isAdmin={isAdmin} userId={user.id} />;
+  return <PollsClient initialPolls={enriched as Poll[]} isAdmin={isAdmin} canManage={canManage} userId={user.id} />;
 }

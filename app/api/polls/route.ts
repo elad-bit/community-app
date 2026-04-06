@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     if (!tenantId) return NextResponse.json({ error: "לא משויך לקהילה" }, { status: 403 });
 
     const { data: role } = await supabase.rpc("get_my_resident_role");
-    if (role !== "admin") return NextResponse.json({ error: "אין הרשאה" }, { status: 403 });
+    if (!["admin", "chairman"].includes(role)) return NextResponse.json({ error: "אין הרשאה" }, { status: 403 });
 
     const body = await request.json();
     const { title, description, type, category, is_anonymous, options, starts_at, ends_at } = body;

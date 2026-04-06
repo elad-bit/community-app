@@ -62,7 +62,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (!tenantId) return NextResponse.json({ error: "לא משויך לקהילה" }, { status: 403 });
 
     const { data: role } = await supabase.rpc("get_my_resident_role");
-    if (role !== "admin") return NextResponse.json({ error: "אין הרשאה" }, { status: 403 });
+    if (!["admin", "chairman"].includes(role)) return NextResponse.json({ error: "אין הרשאה" }, { status: 403 });
 
     const body = await request.json();
     const adminSupabase = createServerSupabaseAdminClient();
@@ -89,7 +89,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     if (!user) return NextResponse.json({ error: "לא מחובר" }, { status: 401 });
 
     const { data: role } = await supabase.rpc("get_my_resident_role");
-    if (role !== "admin") return NextResponse.json({ error: "אין הרשאה" }, { status: 403 });
+    if (!["admin", "chairman"].includes(role)) return NextResponse.json({ error: "אין הרשאה" }, { status: 403 });
 
     const { data: tenantId } = await supabase.rpc("get_my_tenant_id");
     const adminSupabase = createServerSupabaseAdminClient();

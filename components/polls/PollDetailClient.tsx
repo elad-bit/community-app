@@ -7,6 +7,7 @@ import type { Poll, PollOption } from "@/types/index";
 interface Props {
   poll: Poll;
   isAdmin: boolean;
+  canManage?: boolean;
   userId: string;
 }
 
@@ -34,20 +35,31 @@ const STATUS_COLORS: Record<string, string> = {
   closed: "bg-red-100 text-red-700",
 };
 
-export function PollDetailClient({ poll: initialPoll, isAdmin, userId }: Props) {
+export function PollDetailClient({ poll: initialPoll, isAdmin, canManage, userId }: Props) {
   const router = useRouter();
+  const effectiveCanManage = canManage ?? isAdmin;
   const [poll, setPoll] = useState<Poll>(initialPoll);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"vote" | "results" | "voters">(
     initialPoll.has_voted || initialPoll.status === "closed" ? "results" : "vote"
   );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const canVote = poll.status === "open" && !poll.has_voted;
-  const showResults = poll.has_voted || poll.status === "closed" || isAdmin;
+  // תוצאות גלויות לכולם: אחרי הצבעה, כשסגורה, או בכל עת למנהל
+  const showResults = poll.has_voted || poll.status === "closed" || effectiveCanManage;
+
+  function handleCopyLink() {
+    const url = `${window.location.origin}/dashboard/polls/${poll.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2500);
+    });
+  }
   const maxVotes = Math.max(...(poll.options || []).map((o: PollOption) => o.vote_count || 0), 1);
 
   async function handleVote() {
@@ -140,9 +152,16 @@ export function PollDetailClient({ poll: initialPoll, isAdmin, userId }: Props) 
             )}
           </div>
 
-          {/* Admin controls */}
-          {isAdmin && (
+          {/* Manager controls */}
+          {effectiveCanManage && (
             <div className="flex flex-col gap-2 items-end">
+              {/* Share link button — always visible to manager */}
+              <button
+                onClick={handleCopyLink}
+                className="px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 text-sm font-semibold rounded-xl hover:bg-blue-100 transition-colors flex items-center gap-2"
+              >
+                {linkCopied ? "✅ הועתק!" : "🔗 העתק קישור"}
+              </button>
               {poll.status === "draft" && (
                 <button
                   onClick={() => handleStatusChange("open")}
@@ -222,7 +241,7 @@ export function PollDetailClient({ poll: initialPoll, isAdmin, userId }: Props) 
             📊 תוצאות
           </button>
         )}
-        {isAdmin && !poll.is_anonymous && (
+        {effectiveCanManage && !poll.is_anonymous && (
           <button
             onClick={() => setActiveTab("voters")}
             className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
@@ -326,12 +345,12 @@ export function PollDetailClient({ poll: initialPoll, isAdmin, userId }: Props) 
         </div>
       )}
 
-      {/* Voters tab (admin, non-anonymous) */}
-      {activeTab === "voters" && isAdmin && !poll.is_anonymous && (
+      {/* Voters tab (admin/chairman, non-anonymous) */}
+      {activeTab === "voters" && effectiveCanManage && !poll.is_anonymous && (
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
             <h2 className="font-bold text-gray-800">רשימת מצביעים ({(poll.voters || []).length})</h2>
-            <p className="text-xs text-gray-500 mt-0.5">הצבעה גלויה — רשימה נראית לאדמין בלבד</p>
+            <p className="text-xs text-gray-500 mt-0.5">הצבעה גלויה — רשימה נראית למנהל ויושב ראש ועד</p>
           </div>
           {(poll.voters || []).length === 0 ? (
             <div className="text-center py-8 text-gray-400">
