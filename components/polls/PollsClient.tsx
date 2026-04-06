@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -403,6 +404,7 @@ function ResultsModal({ poll, isOpen, onClose }: {
 
 export function PollsClient({ initialPolls, isAdmin, userId }: PollsClientProps) {
   const toast = useToast();
+  const router = useRouter();
 
   const [polls, setPolls] = useState<Poll[]>(initialPolls);
   const [selectedType, setSelectedType] = useState<PollType>("general_assembly");
@@ -565,7 +567,10 @@ export function PollsClient({ initialPolls, isAdmin, userId }: PollsClientProps)
             <Card key={poll.id} className="p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-secondary-900">{poll.title}</h3>
+                  <h3
+                    className="text-lg font-bold text-secondary-900 cursor-pointer hover:text-primary-600 transition-colors"
+                    onClick={() => router.push(`/dashboard/polls/${poll.id}`)}
+                  >{poll.title}</h3>
                   {poll.description && (
                     <p className="text-sm text-secondary-600 mt-1 line-clamp-2">{poll.description}</p>
                   )}
@@ -594,6 +599,9 @@ export function PollsClient({ initialPolls, isAdmin, userId }: PollsClientProps)
                 </div>
 
                 <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => router.push(`/dashboard/polls/${poll.id}`)}>
+                    פרטים
+                  </Button>
                   {poll.status === "open" && !poll.has_voted && (
                     <Button size="sm" onClick={() => handleVote(poll)}>
                       הצבע
