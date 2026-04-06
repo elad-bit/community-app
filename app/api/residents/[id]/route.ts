@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createServerSupabaseAdminClient } from "@/lib/supabase/server";
 
 // GET /api/residents/[id]
 export async function GET(
@@ -38,7 +38,14 @@ export async function PUT(
     const { name, phone, address, role, balance, user_id } = body;
     if (!name?.trim()) return NextResponse.json({ error: "שם הוא שדה חובה" }, { status: 400 });
 
-    const { data, error } = await supabase
+    // Check role via user client before using admin client
+    const { data: userRole } = await supabase.rpc("get_my_resident_role");
+    if (!["admin", "chairman"].includes(userRole)) {
+      return NextResponse.json({ error: "אין הרשאה — רק מנהל יכול לעדכן תושבים" }, { status: 403 });
+    }
+
+    const adminSupabase = createServerSupabaseAdminClient();
+    const { data, error } = await adminSupabase
       .from("residents")
       .update({
         name: name.trim(),
@@ -52,12 +59,7 @@ export async function PUT(
       .select()
       .single();
 
-    if (error) {
-      if (error.code === "42501") {
-        return NextResponse.json({ error: "אין הרשאה — רק מנהל יכול לעדכן תושבים" }, { status: 403 });
-      }
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     return NextResponse.json({ data });
   } catch (err: unknown) {
@@ -75,14 +77,14 @@ export async function DELETE(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "לא מחובר" }, { status: 401 });
 
-    const { error } = await supabase.from("residents").delete().eq("id", params.id);
-
-    if (error) {
-      if (error.code === "42501") {
-        return NextResponse.json({ error: "אין הרשאה — רק מנהל יכול למחוק תושבים" }, { status: 403 });
-      }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    const { data: userRole2 } = await supabase.rpc("get_my_resident_role");
+    if (!["admin", "chairman"].includes(userRole2)) {
+      return NextResponse.json({ error: "אין הרשאה — רק מנהל יכול למחוק תושבים" }, { status: 403 });
     }
+
+    const adminSupabase = createServerSupabaseAdminClient();
+    const { error } = await adminSupabase.from("residents").delete().eq("id", params.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
