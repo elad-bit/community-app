@@ -550,7 +550,7 @@ function DecisionCard({ decision, canManage, onAction }: DecisionCardProps) {
                   <span>👎</span> {decision.vote_against} נגד
                 </span>
               )}
-              {decision.vote_abstain !== null && decision.vote_abstain > 0 && (
+              {decision.vote_abstain != null && decision.vote_abstain > 0 && (
                 <span className="flex items-center gap-1 text-secondary-400">
                   <span>✋</span> {decision.vote_abstain} נמנע
                 </span>
