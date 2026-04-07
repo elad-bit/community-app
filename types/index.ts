@@ -231,6 +231,90 @@ export interface BudgetSummary {
   pct_executed: number;
 }
 
+// --- פרוטוקולים ---
+
+export type ProtocolType = "committee" | "general_assembly" | "association";
+export type ProtocolStatus = "draft" | "processing" | "ready" | "approved";
+export type DecisionStatus = "pending_review" | "approved" | "rejected";
+export type VoteResult = "approved" | "rejected" | "tabled";
+export type SignerRole = "chairman" | "community_manager" | "committee_seal";
+
+export interface Protocol {
+  id: string;
+  tenant_id: string;
+  title: string;
+  protocol_type: ProtocolType;
+  meeting_date: string;
+  meeting_number?: number | null;
+  location?: string | null;
+  association_name?: string | null;
+  chairman_name?: string | null;
+  community_manager_name?: string | null;
+  participants: string[];
+  absent: string[];
+  guests: string[];
+  agenda: ProtocolAgendaItem[];
+  file_url?: string | null;
+  file_type?: "pdf" | "docx" | "image" | null;
+  raw_text?: string | null;
+  status: ProtocolStatus;
+  ai_processed: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  // joined
+  decisions?: ProtocolDecision[];
+  signatures?: ProtocolSignature[];
+}
+
+export interface ProtocolAgendaItem {
+  number: number;
+  topic: string;
+}
+
+export interface ProtocolDecision {
+  id: string;
+  protocol_id: string;
+  tenant_id: string;
+  topic_number?: number | null;
+  topic_title?: string | null;
+  decision_text: string;
+  vote_for?: number | null;
+  vote_against?: number | null;
+  vote_abstain?: number | null;
+  vote_result?: VoteResult | null;
+  linked_task_id?: string | null;
+  status: DecisionStatus;
+  order_index: number;
+  created_at: string;
+  // joined
+  tasks?: { id: string; title: string; status: string } | null;
+}
+
+export interface ProtocolSignature {
+  id: string;
+  protocol_id: string;
+  signer_role: SignerRole;
+  signature_data: string; // base64 PNG/SVG
+  signed_at: string;
+  signed_by?: string | null;
+}
+
+export interface ProtocolFormData {
+  title: string;
+  protocol_type: ProtocolType;
+  meeting_date: string;
+  meeting_number?: number;
+  location?: string;
+  association_name?: string;
+  chairman_name?: string;
+  community_manager_name?: string;
+  participants?: string[];
+  absent?: string[];
+  guests?: string[];
+  agenda?: ProtocolAgendaItem[];
+}
+
 // ============================================================
 // סוגי API Response
 // ============================================================
