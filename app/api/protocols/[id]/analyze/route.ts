@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient, createServerSupabaseAdminClient } from "@/lib/supabase/server";
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 interface ExtractedDecision {
   topic_number: number | null;
@@ -28,12 +28,12 @@ interface AIExtractionResult {
 }
 
 async function extractWithAI(text: string): Promise<AIExtractionResult> {
-  if (!ANTHROPIC_API_KEY) {
-    throw new Error("ANTHROPIC_API_KEY לא מוגדר בסביבה");
+  if (!GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY לא מוגדר בסביבה");
   }
 
   const prompt = `אתה מנתח פרוטוקולי ישיבות של קהילות ויישובים בישראל.
-נתחו את הפרוטוקול הבא וחלצו את המידע הבא בפורמט JSON בלבד (ללא טקסט נוסף):
+נתח את הפרוטוקול הבא וחלץ את המידע הבא בפורמט JSON בלבד (ללא טקסט נוסף, ללא markdown):
 
 {
   "title": "כותרת הפרוטוקול",
@@ -66,32 +66,34 @@ async function extractWithAI(text: string): Promise<AIExtractionResult> {
 - אם אין נתוני הצבעה — השאר null
 - vote_result: "approved" = אושר, "rejected" = נדחה, "tabled" = נדחה לדיון
 - הכל בעברית
-- החזר JSON בלבד ללא markdown
+- החזר JSON בלבד ללא markdown ובלוק קוד
 
 הפרוטוקול:
 ${text.substring(0, 12000)}`;
 
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "claude-opus-4-6",
-      max_tokens: 4096,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 4096,
+          responseMimeType: "application/json",
+        },
+      }),
+    }
+  );
 
   if (!response.ok) {
     const err = await response.text();
-    throw new Error(`Anthropic API error: ${err}`);
+    throw new Error(`Gemini API error: ${err}`);
   }
 
   const result = await response.json();
-  const content = result.content?.[0]?.text || "";
+  const content = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
   // Strip markdown code fences if present
   const clean = content.replace(/^```(?:json)?\n?/m, "").replace(/\n?```$/m, "").trim();
