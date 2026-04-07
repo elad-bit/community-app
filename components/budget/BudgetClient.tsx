@@ -278,6 +278,15 @@ export function BudgetClient({ items: initialItems, transactions: initialTxs, su
                         {tx.supplier && ` · ${tx.supplier}`}
                         {(tx as any).budget_items && ` · ${(tx as any).budget_items.category}`}
                       </p>
+                      {/* Protocol decision badge */}
+                      {(tx as any).protocol_decision_id && (
+                        <span className="inline-flex items-center gap-1 mt-1 text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full px-2 py-0.5 font-medium">
+                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          מאושר בפרוטוקול
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${SOURCE_COLORS[tx.source]}`}>{SOURCE_LABELS[tx.source]}</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type {
   Protocol, ProtocolDecision, ProtocolSignature,
@@ -572,6 +572,26 @@ function DecisionCard({ decision, canManage, onAction }: DecisionCardProps) {
               משימה: {(decision.tasks as any).title}
             </div>
           )}
+
+          {/* Linked budget item */}
+          {decision.linked_budget_item_id && (
+            <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5">
+              <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>
+                מקור תקציבי:&nbsp;
+                <span className="font-medium">
+                  {decision.budget_items?.description || "פריט תקציב"}
+                </span>
+                {decision.budget_amount != null && (
+                  <span className="mr-1 text-emerald-600 font-semibold">
+                    — ₪{Number(decision.budget_amount).toLocaleString("he-IL")}
+                  </span>
+                )}
+              </span>
+            </div>
+          )}
         </div>
 
         {canManage && decision.status === "pending_review" && (
@@ -596,6 +616,14 @@ interface DecisionActionModalProps {
   onDone: () => void;
 }
 
+interface BudgetItem {
+  id: string;
+  description: string;
+  category: string;
+  planned_amount: number;
+  year: number;
+}
+
 function DecisionActionModal({ decision, protocolId, onClose, onDone }: DecisionActionModalProps) {
   const [action, setAction] = useState<"approved" | "rejected">("approved");
   const [createTask, setCreateTask] = useState(true);
@@ -608,6 +636,27 @@ function DecisionActionModal({ decision, protocolId, onClose, onDone }: Decision
   const [dueDate, setDueDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Budget linking state
+  const [linkBudget, setLinkBudget] = useState(false);
+  const [budgetItemId, setBudgetItemId] = useState("");
+  const [budgetAmount, setBudgetAmount] = useState("");
+  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
+  const [budgetItemsLoading, setBudgetItemsLoading] = useState(false);
+
+  // Load budget items when the user switches to "approved"
+  useEffect(() => {
+    if (action !== "approved" || budgetItems.length > 0) return;
+    setBudgetItemsLoading(true);
+    const currentYear = new Date().getFullYear();
+    fetch(`/api/budget/items?year=${currentYear}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.data) setBudgetItems(json.data);
+      })
+      .catch(() => {})
+      .finally(() => setBudgetItemsLoading(false));
+  }, [action, budgetItems.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -623,6 +672,8 @@ function DecisionActionModal({ decision, protocolId, onClose, onDone }: Decision
           task_title: taskTitle.trim(),
           task_description: taskDesc.trim() || null,
           due_date: dueDate || null,
+          budget_item_id: action === "approved" && linkBudget && budgetItemId ? budgetItemId : null,
+          budget_amount: action === "approved" && linkBudget && budgetAmount ? Number(budgetAmount) : null,
         }),
       });
       const json = await res.json();
@@ -724,6 +775,62 @@ function DecisionActionModal({ decision, protocolId, onClose, onDone }: Decision
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
                       className="w-full text-sm border border-secondary-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-300"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Budget linking (only when approving) */}
+          {action === "approved" && (
+            <div className="space-y-3 border-t border-secondary-100 pt-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={linkBudget}
+                  onChange={(e) => setLinkBudget(e.target.checked)}
+                  className="h-4 w-4 rounded text-emerald-600"
+                />
+                <span className="text-sm font-medium text-secondary-700">שייך למקור תקציבי</span>
+              </label>
+
+              {linkBudget && (
+                <div className="space-y-3 pr-6">
+                  <div>
+                    <label className="block text-xs font-medium text-secondary-600 mb-1">פריט תקציב</label>
+                    {budgetItemsLoading ? (
+                      <p className="text-xs text-secondary-400">טוען פריטי תקציב...</p>
+                    ) : budgetItems.length === 0 ? (
+                      <p className="text-xs text-secondary-400">לא נמצאו פריטי תקציב לשנה הנוכחית</p>
+                    ) : (
+                      <select
+                        value={budgetItemId}
+                        onChange={(e) => setBudgetItemId(e.target.value)}
+                        className="w-full text-sm border border-secondary-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white"
+                      >
+                        <option value="">— בחר פריט תקציב —</option>
+                        {budgetItems.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.description}
+                            {item.category ? ` (${item.category})` : ""}
+                            {item.planned_amount ? ` — ₪${Number(item.planned_amount).toLocaleString("he-IL")}` : ""}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-secondary-600 mb-1">סכום מאושר (₪)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={budgetAmount}
+                      onChange={(e) => setBudgetAmount(e.target.value)}
+                      placeholder="לדוגמה: 5000"
+                      className="w-full text-sm border border-secondary-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                     />
                   </div>
                 </div>

@@ -284,11 +284,14 @@ export interface ProtocolDecision {
   vote_abstain?: number | null;
   vote_result?: VoteResult | null;
   linked_task_id?: string | null;
+  linked_budget_item_id?: string | null;
+  budget_amount?: number | null;
   status: DecisionStatus;
   order_index: number;
   created_at: string;
   // joined
   tasks?: { id: string; title: string; status: string } | null;
+  budget_items?: { id: string; description: string; category: string; planned_amount: number; year: number } | null;
 }
 
 export interface ProtocolSignature {
