@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient, createServerSupabaseAdminClient } from "@/lib/supabase/server";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 interface ExtractedDecision {
   topic_number: number | null;
@@ -28,8 +28,8 @@ interface AIExtractionResult {
 }
 
 async function extractWithAI(text: string): Promise<AIExtractionResult> {
-  if (!GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY לא מוגדר בסביבה");
+  if (!GROQ_API_KEY) {
+    throw new Error("GROQ_API_KEY לא מוגדר בסביבה");
   }
 
   const prompt = `אתה מנתח פרוטוקולי ישיבות של קהילות ויישובים בישראל.
@@ -40,7 +40,7 @@ async function extractWithAI(text: string): Promise<AIExtractionResult> {
   "meeting_date": "YYYY-MM-DD",
   "meeting_number": 1,
   "association_name": "שם האגודה/ועד",
-  "chairman_name": "שם יו\"ר הוועד",
+  "chairman_name": "שם יו\\"ר הוועד",
   "community_manager_name": "שם מנהל הקהילה (אם קיים)",
   "participants": ["שם1", "שם2"],
   "absent": ["שם1", "שם2"],
@@ -65,35 +65,38 @@ async function extractWithAI(text: string): Promise<AIExtractionResult> {
 - חלץ את כל ההחלטות שהתקבלו, כולל החלטות ביניים
 - אם אין נתוני הצבעה — השאר null
 - vote_result: "approved" = אושר, "rejected" = נדחה, "tabled" = נדחה לדיון
-- הכל בעברית
 - החזר JSON בלבד ללא markdown ובלוק קוד
 
 הפרוטוקול:
 ${text.substring(0, 12000)}`;
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 4096,
-          responseMimeType: "application/json",
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${GROQ_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.1,
+      max_tokens: 4096,
+      messages: [
+        {
+          role: "system",
+          content: "אתה מנתח פרוטוקולי ישיבות. החזר תמיד JSON תקני בלבד, ללא טקסט נוסף.",
         },
-      }),
-    }
-  );
+        { role: "user", content: prompt },
+      ],
+    }),
+  });
 
   if (!response.ok) {
     const err = await response.text();
-    throw new Error(`Gemini API error: ${err}`);
+    throw new Error(`Groq API error: ${err}`);
   }
 
   const result = await response.json();
-  const content = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  const content = result.choices?.[0]?.message?.content || "";
 
   // Strip markdown code fences if present
   const clean = content.replace(/^```(?:json)?\n?/m, "").replace(/\n?```$/m, "").trim();
