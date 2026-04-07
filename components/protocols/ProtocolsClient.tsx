@@ -365,7 +365,7 @@ function NewProtocolModal({ onClose, onCreated }: NewProtocolModalProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-secondary-700 mb-1">יו"ר ועד</label>
+              <label className="block text-sm font-medium text-secondary-700 mb-1">יו&quot;ר ועד</label>
               <input
                 type="text"
                 value={form.chairman_name}
